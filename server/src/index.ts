@@ -12,13 +12,19 @@ const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID!;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET!;
 const FRONTEND_URL = process.env.FRONTEND_URL!;
 
-app.use(cors({ origin: [FRONTEND_URL, "http://localhost:5173"] }));
+const corsOptions = {
+  origin: [FRONTEND_URL, "http://localhost:5173"],
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
 
-// ── Exchange code for token ──
 app.post("/auth/token", async (req, res) => {
   const { code, redirect_uri, code_verifier } = req.body;
-
   try {
     const response = await axios.post(
       "https://accounts.spotify.com/api/token",
@@ -40,7 +46,6 @@ app.post("/auth/token", async (req, res) => {
   }
 });
 
-// ── Proxy: get playlist ──
 app.get("/spotify/playlists/:id", async (req, res) => {
   const token = req.headers.authorization;
   try {
@@ -54,7 +59,6 @@ app.get("/spotify/playlists/:id", async (req, res) => {
   }
 });
 
-// ── Proxy: get playlist tracks ──
 app.get("/spotify/playlists/:id/tracks", async (req, res) => {
   const token = req.headers.authorization;
   const limit = req.query.limit ?? 100;
@@ -70,7 +74,6 @@ app.get("/spotify/playlists/:id/tracks", async (req, res) => {
   }
 });
 
-// ── Proxy: get audio features ──
 app.get("/spotify/audio-features", async (req, res) => {
   const token = req.headers.authorization;
   const ids = req.query.ids;
@@ -85,7 +88,6 @@ app.get("/spotify/audio-features", async (req, res) => {
   }
 });
 
-// ── Proxy: get user playlists ──
 app.get("/spotify/me/playlists", async (req, res) => {
   const token = req.headers.authorization;
   const limit = req.query.limit ?? 50;
@@ -100,7 +102,6 @@ app.get("/spotify/me/playlists", async (req, res) => {
   }
 });
 
-// ── Proxy: get current user ──
 app.get("/spotify/me", async (req, res) => {
   const token = req.headers.authorization;
   try {
@@ -113,7 +114,6 @@ app.get("/spotify/me", async (req, res) => {
   }
 });
 
-// ── Proxy: create playlist ──
 app.post("/spotify/users/:userId/playlists", async (req, res) => {
   const token = req.headers.authorization;
   try {
@@ -128,7 +128,6 @@ app.post("/spotify/users/:userId/playlists", async (req, res) => {
   }
 });
 
-// ── Proxy: add tracks to playlist ──
 app.post("/spotify/playlists/:id/tracks", async (req, res) => {
   const token = req.headers.authorization;
   try {
